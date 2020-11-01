@@ -1,5 +1,5 @@
 # Minecraft_Pre-generate_World
-Powershell script to pregenerate world
+Powershell script to pre-generate world
 
  ## How to run the Script
 1. Change values in **Settings** Section in the Script
