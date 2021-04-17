@@ -31,19 +31,19 @@
 #=================================================================
 # Remove-Variable * -ErrorAction Ignore
 
-$regionGrid = 5 # Region file Grid: 4 = 4x4 Grid og Region files = 2048x2048 Blocks
-$viewDist = 19 # View distance in chunks on the server
-$tpDelay = 1 # Delay between each Teleport
+$regionGrid = 10 # Region file Grid: 4 = 4x4 Grid og Region files = 2048x2048 Blocks
+$viewDist = 15 # View distance in chunks on the server
+$tpDelay = 5 # Delay between each Teleport
 $player = "wewerak47" # Define player which will be teleported. You can use @p or name.
-[bool]$env:Server = $false # Will this script run on server?
-$process = "Notepad" # Name of the process. On client side its usually "Java" or "Javaw". On server side its usually the commandline "cmd".
+[bool]$env:Server = $true # Will this script run on server?
+$process = "putty" # Name of the process. On client side its usually "Java" or "Javaw". On server side its usually the commandline "cmd".
 # Continue from last position
 $skipRow = 0 # How many Rows in first Column the script will skip 
-$skipColumn = 0 # How many Columns the script will skip 
+$skipColumn = 13 # How many Columns the script will skip 
 # row = X axis
 # column = Z axis
 #=================================================================
-
+$env:Player = $player
 function Send {
     param (
         [string]$text,
@@ -54,11 +54,15 @@ function Send {
     Start-Sleep -Milliseconds 200
     if (!$server) {
         [System.Windows.Forms.SendKeys]::SendWait("t")
+        $execute = "/"
+    }
+    else{
+    $execute = "/execute at $env:Player as $env:Player run"
     }
     Start-Sleep -Milliseconds 300
-    [System.Windows.Forms.SendKeys]::SendWait("$text")
+    [System.Windows.Forms.SendKeys]::SendWait("$execute $text")
     Start-Sleep -Milliseconds 300
-    [System.Windows.Forms.SendKeys]::SendWait("{Enter}")
+    [System.Windows.Forms.SendKeys]::SendWait("{ENTER}")
 }
 [int]$env:AppID = [int](get-process -name $process).Id
 [int]$tpStart = ((-1) * ($regionGrid / 2) * 512) # Starting position
@@ -78,47 +82,47 @@ Add-Type -AssemblyName PresentationCore, PresentationFramework
 [System.Windows.Forms.SendKeys]::SendWait("{ESC}")
 
 Start-Sleep -Seconds 1
-Send ("/say Total number of jumps " + $totalLoopsColumn * $totalLoopsRow)
+Send ("say Total number of jumps " + $totalLoopsColumn * $totalLoopsRow)
 Start-Sleep -Milliseconds 300
-Send "/say Estimated time $timeEst"
+Send "say Estimated time $timeEst"
 Start-Sleep $tpDelay
 $tpStartX = ($tpStart + ($skipRow * $tpDist))
 $tpStartZ = ($tpStart + ($skipColumn * $tpDist))
-Send "/tp $player $tpStartX 192 $tpStartZ" # Tp to last position
+Send "tp $player $tpStartX 192 $tpStartZ" # Tp to last position
 
-# Start Loop for Z-axis
+# Start Loop for Z-axis Column
 $i = 0
 do {
     $i ++
-    # Start Loop for X-axis
+    # Start Loop for X-axis Row
     $i2 = 0
     do {
         $i2 ++
         Start-Sleep $tpDelay # Insert Delay
-        Send "/tp $player {~} {~} {~} -90 20"  # Rotate 90 deg
+        Send "tp $player {~} {~} {~} -90 20"  # Rotate 90 deg
         Start-Sleep $tpDelay # Insert Delay
-        Send "/tp $player {~} {~} {~} 0 20"   # Rotate 90 deg
+        Send "tp $player {~} {~} {~} 0 20"   # Rotate 90 deg
         Start-Sleep $tpDelay # Insert Delay
-        Send "/tp $player {~} {~} {~} 90 20"   # Rotate 90 deg
+        Send "tp $player {~} {~} {~} 90 20"   # Rotate 90 deg
         Start-Sleep $tpDelay # Insert Delay
-        Send "/tp $player {~} {~} {~} 180 20"  # Rotate 90 deg
+        Send "tp $player {~} {~} {~} 180 20"  # Rotate 90 deg
         Start-Sleep $tpDelay # Insert Delay
-        Send "/tp $player {~}$tpDist {~} {~}"  # Return to beginnig of the row
+        Send "tp $player {~}$tpDist {~} {~}"  # Return to beginnig of the row
         
         Start-Sleep -Milliseconds 300
-        Send "/say Finished jump $i2 out of $totalLoopsRow in row" 
+        Send "say Finished jump $i2 out of $totalLoopsRow in row" 
         Start-Sleep $tpDelay
     } 
     until ($i2 -ge $totalLoopsRow)
     if ($totalLoopsRow -ne $totalLoops) {
         $totalLoopsRow = $totalLoops    
     }
-    Send "/tp $player $tpStart 192 {~}$tpDist"  # TP one row up
+    Send "tp $player $tpStart 192 {~}$tpDist"  # TP one row up
     Start-Sleep -Milliseconds 300
     Send "/say Finished $i column out of $totalLoopsColumn"
 } 
 until ($i -ge $totalLoopsColumn)
-Send "/tp $player 0 200 0"
+Send "tp $player 0 192 0"
 Send "All Done"
 
 
